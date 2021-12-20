@@ -33,18 +33,20 @@ class PageService: Service() {
         private const val STOP = "stop"
 
         fun start(context: Context?, path:String){
-            val intent = Intent(context,PageService::class.java)
-            intent.putExtra(PATH,path)
-            intent.action = ACTION
-            intent.`package`= context?.packageName
+            val intent = Intent(context,PageService::class.java).apply {
+                putExtra(PATH,path)
+                action = ACTION
+                `package`= context?.packageName
+            }
             context?.startService(intent)
         }
 
         fun stop(context: Context?){
-            val intent = Intent(context,PageService::class.java)
-            intent.action = ACTION
-            intent.`package`= context?.packageName
-            intent.putExtra(STOP, STOP)
+            val intent = Intent(context,PageService::class.java).apply {
+                action = ACTION
+                `package`= context?.packageName
+                putExtra(STOP, STOP)
+            }
             context?.startService(intent)
         }
     }
