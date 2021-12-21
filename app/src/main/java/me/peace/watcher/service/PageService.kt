@@ -95,15 +95,20 @@ class PageService: Service() {
         val page:Array<String>? = Utils.topPage(this)
         val packageName = page?.get(0)?:""
         val className = page?.get(1)?:""
+        val currentMemory = page?.get(2)?:""
+        val systemFreeMemory = page?.get(3)?:""
         size(packageName){
             val cacheSize = it?.cacheSize?:0
             val dataSize = it?.dataSize?:0
             val codeSize = it?.codeSize?:0
+
             textView.post {
                 val template = "package:$packageName \nclass:$className \n" +
                         "cacheSize:${formatSize(cacheSize)}\n" +
                         "dataSize:${formatSize(dataSize)}\n" +
-                        "codeSize:${formatSize(codeSize)}"
+                        "codeSize:${formatSize(codeSize)}\n" +
+                        "currentMemory:$currentMemory\n" +
+                        "systemFreeMemory:$systemFreeMemory"
                 textView.text = template
             }
         }
@@ -119,7 +124,7 @@ class PageService: Service() {
         layoutParams.x = 50
         layoutParams.y = 50
         layoutParams.width = 420
-        layoutParams.height = 180
+        layoutParams.height = 240
 
         val layoutInflater = LayoutInflater.from(applicationContext)
         layout = layoutInflater.inflate(R.layout.layout_page_ui, null) as LinearLayoutCompat
