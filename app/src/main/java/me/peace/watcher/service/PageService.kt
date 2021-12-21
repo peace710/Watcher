@@ -93,17 +93,19 @@ class PageService: Service() {
 
     private fun update(){
         val page:Array<String>? = Utils.topPage(this)
-        val packageName = page?.get(0)?:""
-        val className = page?.get(1)?:""
-        val currentMemory = page?.get(2)?:""
-        val systemFreeMemory = page?.get(3)?:""
+        val pid = page?.get(0)?:""
+        val packageName = page?.get(1)?:""
+        val className = page?.get(2)?:""
+        val currentMemory = page?.get(3)?:""
+        val systemFreeMemory = page?.get(4)?:""
         size(packageName){
             val cacheSize = it?.cacheSize?:0
             val dataSize = it?.dataSize?:0
             val codeSize = it?.codeSize?:0
 
             textView.post {
-                val template = "package:$packageName \nclass:$className \n" +
+                val template = "pid:$pid\n" +
+                        "package:$packageName \nclass:$className \n" +
                         "cacheSize:${formatSize(cacheSize)}\n" +
                         "dataSize:${formatSize(dataSize)}\n" +
                         "codeSize:${formatSize(codeSize)}\n" +

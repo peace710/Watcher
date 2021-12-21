@@ -11,38 +11,37 @@ object Utils {
         val top = top(context)
         val packageName:String=top?.packageName?:""
         val className:String=top?.className?:""
-        val currentMemory = appMemory(context,packageName)
+        val pid = pid(context,packageName)
+        val currentMemory = appMemory(context,pid)
         val systemFreeMemory = systemFreeMemory(context)
-        return arrayOf<String>(packageName,className,currentMemory,systemFreeMemory)
+        return arrayOf<String>(pid.toString(),packageName,className,currentMemory,systemFreeMemory)
     }
 
     private fun top(context: Context?): ComponentName? {
-        kotlin.runCatching {
-            val systemService = context?.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val runningTasks = systemService.getRunningTasks(1)
-            if (runningTasks.isNotEmpty()){
-                return runningTasks[0]?.topActivity
-            }
-            return null
-        }.onSuccess {
-            return it
-        }.onFailure {
-            it.printStackTrace()
+        val activityManager = context?.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val runningTasks = activityManager.getRunningTasks(1)
+        if (runningTasks.isNotEmpty()){
+            return runningTasks[0]?.topActivity
         }
         return null
     }
 
-    private fun appMemory(context:Context?, packageName:String):String{
+    private fun pid(context:Context?, packageName:String):Int{
         val activityManager = context?.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val runningAppProcesses = activityManager.runningAppProcesses
-        var memory = ""
+        var pid = -1
         runningAppProcesses.filter {
             it.processName == packageName
         }.forEach{
-            val processMemoryInfo = activityManager.getProcessMemoryInfo(intArrayOf(it.pid))
-            memory = Formatter.formatFileSize(context,processMemoryInfo[0].dalvikPrivateDirty.toLong() * 1024)
+           pid = it.pid
         }
-        return memory
+        return pid
+    }
+
+    private fun appMemory(context:Context?, pid:Int):String{
+        val activityManager = context?.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val processMemoryInfo = activityManager.getProcessMemoryInfo(intArrayOf(pid))
+        return Formatter.formatFileSize(context,processMemoryInfo[0].dalvikPrivateDirty.toLong() * 1024)
     }
 
     private fun systemFreeMemory(context: Context?):String{
@@ -50,5 +49,7 @@ object Utils {
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
         return Formatter.formatFileSize(context,memoryInfo.availMem)
+
+
     }
 }
