@@ -3,9 +3,11 @@ package me.peace.watcher.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.IPackageStatsObserver
+import android.content.pm.PackageStats
 import android.graphics.PixelFormat
-import android.os.Handler
 import android.os.IBinder
+import android.text.format.Formatter
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.WindowManager
@@ -13,7 +15,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import me.peace.watcher.R
 import android.view.View
 import androidx.appcompat.widget.LinearLayoutCompat
-import me.peace.watcher.shell.Shell
 import me.peace.watcher.util.Utils
 import java.util.*
 
@@ -25,6 +26,7 @@ class PageService: Service() {
 
     private lateinit var timer:Timer
     private lateinit var task:TimerTask
+
 
     companion object{
         private const val FREQ = 1000L
@@ -90,9 +92,20 @@ class PageService: Service() {
     }
 
     private fun update(){
-        val page = Utils.topPage(this)
-        textView?.post {
-            textView.text = page
+        val page:Array<String>? = Utils.topPage(this)
+        val packageName = page?.get(0)?:""
+        val className = page?.get(1)?:""
+        size(packageName){
+            val cacheSize = it?.cacheSize?:0
+            val dataSize = it?.dataSize?:0
+            val codeSize = it?.codeSize?:0
+            textView.post {
+                val template = "package:$packageName \nclass:$className \n" +
+                        "cacheSize:${formatSize(cacheSize)}\n" +
+                        "dataSize:${formatSize(dataSize)}\n" +
+                        "codeSize:${formatSize(codeSize)}"
+                textView.text = template
+            }
         }
     }
 
@@ -124,5 +137,22 @@ class PageService: Service() {
         override fun run() {
             update()
         }
+    }
+
+    private fun size(packageName:String,callback:(PackageStats?) -> Unit){
+        val getPackageSizeInfo = Class.forName("android.content.pm.PackageManager").getDeclaredMethod(
+            "getPackageSizeInfo", Class.forName("java.lang.String"),
+            Class.forName("android.content.pm.IPackageStatsObserver")
+        )
+        getPackageSizeInfo.invoke(packageManager,packageName,object: IPackageStatsObserver.Stub() {
+            override fun onGetStatsCompleted(pStats: PackageStats?, succeeded: Boolean) {
+                callback?.invoke(pStats)
+            }
+        })
+
+    }
+
+    private fun formatSize(size:Long):String{
+        return Formatter.formatFileSize(this,size)
     }
 }

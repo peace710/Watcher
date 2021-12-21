@@ -6,11 +6,11 @@ import android.content.Context
 
 
 object Utils {
-    fun topPage(context: Context?):String?{
+    fun topPage(context: Context?):Array<String>?{
         val top = top(context)
-        val packageName=top?.packageName
-        val className=top?.className
-        return "package:$packageName\nclass:$className"
+        val packageName:String=top?.packageName?:""
+        val className:String=top?.className?:""
+        return arrayOf<String>(packageName,className)
     }
 
     private fun top(context: Context?): ComponentName? {
