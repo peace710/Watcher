@@ -39,12 +39,20 @@
             </intent-filter>
         </receiver>
         <service android:name=".service.PageService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:process=":remote"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="me.peace.page"></action>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/config" />
         </service>
     </application>
 

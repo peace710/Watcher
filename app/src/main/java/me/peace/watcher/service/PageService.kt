@@ -1,24 +1,35 @@
 package me.peace.watcher.service
 
+import android.accessibilityservice.AccessibilityService
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageStats
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.os.Handler
 import android.os.IBinder
+import android.text.TextUtils
 import android.text.format.Formatter
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.appcompat.widget.AppCompatTextView
 import me.peace.watcher.R
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
 import androidx.appcompat.widget.LinearLayoutCompat
 import me.peace.watcher.util.Utils
 import java.util.*
+import android.view.accessibility.AccessibilityManager
+import android.view.accessibility.AccessibilityNodeInfo.FOCUS_ACCESSIBILITY
+import android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT
+import kotlin.math.log
 
-class PageService: Service() {
+
+class PageService: AccessibilityService() {
     private var initial:Boolean = false
     private lateinit var layout:LinearLayoutCompat
     private lateinit var textView:AppCompatTextView
@@ -26,6 +37,7 @@ class PageService: Service() {
 
     private lateinit var timer:Timer
     private lateinit var task:TimerTask
+    private var focusView:String = ""
 
 
     companion object{
@@ -53,7 +65,6 @@ class PageService: Service() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -83,6 +94,22 @@ class PageService: Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        val child = rootInActiveWindow.findFocus(FOCUS_INPUT)
+        focusView = if (child == null) {
+            ""
+        }else {
+            var rect = Rect()
+            child?.getBoundsInScreen(rect)
+            "FocusView:${child?.viewIdResourceName} - $rect"
+        }
+        update()
+    }
+
+    override fun onInterrupt() {
+
+    }
+
     private fun stopOrNot(intent: Intent?){
         val stop = intent?.getStringExtra(STOP)
         if (stop == STOP){
@@ -104,13 +131,16 @@ class PageService: Service() {
             val codeSize = it?.codeSize?:0
 
             textView.post {
-                val template = "pid:$pid\n" +
-                        "package:$packageName \nclass:$className \n" +
-                        "cacheSize:${formatSize(cacheSize)}\n" +
-                        "dataSize:${formatSize(dataSize)}\n" +
-                        "codeSize:${formatSize(codeSize)}\n" +
-                        "currentMemory:$currentMemory\n" +
-                        "systemFreeMemory:$systemFreeMemory"
+                var template = "Pid:$pid\n" +
+                        "Package:$packageName \nClass:$className \n" +
+                        "CacheSize:${formatSize(cacheSize)}\n" +
+                        "DataSize:${formatSize(dataSize)}\n" +
+                        "CodeSize:${formatSize(codeSize)}\n" +
+                        "CurrentMemory:$currentMemory\n" +
+                        "SystemFreeMemory:$systemFreeMemory"
+                if (!TextUtils.isEmpty(focusView)){
+                    template = "$template\n$focusView"
+                }
                 textView.text = template
             }
         }
@@ -125,8 +155,8 @@ class PageService: Service() {
         layoutParams.gravity = Gravity.LEFT or Gravity.TOP
         layoutParams.x = 50
         layoutParams.y = 50
-        layoutParams.width = 420
-        layoutParams.height = 240
+        layoutParams.width = resources.getDimensionPixelOffset(R.dimen.width)
+        layoutParams.height = resources.getDimensionPixelOffset(R.dimen.height)
 
         val layoutInflater = LayoutInflater.from(applicationContext)
         layout = layoutInflater.inflate(R.layout.layout_page_ui, null) as LinearLayoutCompat
