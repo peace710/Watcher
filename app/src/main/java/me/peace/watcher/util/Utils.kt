@@ -3,7 +3,14 @@ package me.peace.watcher.util
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.text.format.Formatter
+import androidx.core.content.ContextCompat.startActivity
+
+import android.content.pm.ResolveInfo
+
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 
 object Utils {
@@ -41,7 +48,7 @@ object Utils {
     private fun appMemory(context:Context?, pid:Int):String{
         val activityManager = context?.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val processMemoryInfo = activityManager.getProcessMemoryInfo(intArrayOf(pid))
-        return Formatter.formatFileSize(context,processMemoryInfo[0].dalvikPrivateDirty.toLong() * 1024)
+        return Formatter.formatFileSize(context,processMemoryInfo[0].totalPss.toLong() * 1024)
     }
 
     private fun systemFreeMemory(context: Context?):String{
@@ -51,5 +58,5 @@ object Utils {
         return Formatter.formatFileSize(context,memoryInfo.availMem)
 
 
-    }
+}
 }
