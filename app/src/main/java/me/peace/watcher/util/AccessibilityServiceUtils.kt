@@ -17,6 +17,10 @@ object AccessibilityServiceUtils {
         startActivitySafe(context,Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
 
+    /**
+     * settings put secure enabled_accessibility_services me.peace.watcher/me.peace.watcher.service.PageService
+     * settings put secure accessibility_enabled 1
+     */
     fun isAccessibilitySettingsOn(context: Context, serviceName: String?): Boolean {
         var accessibilityEnabled = 0
         val accessibilityFound = false
