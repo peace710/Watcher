@@ -1,18 +1,15 @@
 package me.peace.watcher.service
 
 import android.accessibilityservice.AccessibilityService
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageStats
 import android.graphics.PixelFormat
 import android.graphics.Rect
-import android.os.Handler
-import android.os.IBinder
+import android.text.Html
 import android.text.TextUtils
 import android.text.format.Formatter
-import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.AppCompatTextView
 import me.peace.watcher.R
@@ -20,11 +17,7 @@ import android.view.accessibility.AccessibilityEvent
 import androidx.appcompat.widget.LinearLayoutCompat
 import me.peace.watcher.util.Utils
 import java.util.*
-import android.view.accessibility.AccessibilityManager
-import android.view.accessibility.AccessibilityNodeInfo.FOCUS_ACCESSIBILITY
 import android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT
-import me.peace.watcher.config.Config
-import kotlin.math.log
 
 
 class PageService: AccessibilityService() {
@@ -131,16 +124,17 @@ class PageService: AccessibilityService() {
             val codeSize = it?.codeSize?:0
 
             textView.post {
-                var template = "Pid:$pid\tVersion:$version\n" +
-                        "Package:$packageName\nClass:$className\n" +
-                        "Memory:$currentMemory/$systemFreeMemory\tDataSize:${formatSize(dataSize)}"
+                var template = getString(R.string.watcher_info)
+                var ipContent = ""
                 if (!TextUtils.isEmpty(ip)){
-                    template = "$template\nIP:$ip"
+                    ipContent = String.format(getString(R.string.watcher_ip),ip)
                 }
+                var focusViewContent = ""
                 if (!TextUtils.isEmpty(focusView)){
-                    template = "$template\n$focusView"
+                    focusViewContent = String.format(getString(R.string.watcher_focus_view),focusView)
                 }
-                textView.text = template
+                val html = String.format(template,pid,version,packageName,className,"$currentMemory/$systemFreeMemory",formatSize(dataSize),ipContent,focusViewContent)
+                textView.text = Html.fromHtml(html)
             }
         }
     }
