@@ -2,4 +2,3 @@
 adb root
 adb shell settings put secure enabled_accessibility_services me.peace.watcher/me.peace.watcher.service.PageService
 adb shell settings put secure accessibility_enabled 1
-adb shell am start me.peace.watcher/me.peace.watcher.MainActivity

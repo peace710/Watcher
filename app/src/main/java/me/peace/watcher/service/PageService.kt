@@ -124,23 +124,23 @@ class PageService: AccessibilityService() {
         val currentMemory = page?.get(3)?:""
         val systemFreeMemory = page?.get(4)?:""
         val version = page?.get(5)?:""
+        val ip = Utils.ip()
         size(packageName){
             val cacheSize = it?.cacheSize?:0
             val dataSize = it?.dataSize?:0
             val codeSize = it?.codeSize?:0
 
             textView.post {
-                var template = "Pid:$pid\n" +
-                        "Package:$packageName \nClass:$className \n" +
-                        "CacheSize:${formatSize(cacheSize)}\n" +
-                        "DataSize:${formatSize(dataSize)}\n" +
-                        "CodeSize:${formatSize(codeSize)}\n" +
-                        "CurrentMemory:$currentMemory\n" +
-                        "SystemFreeMemory:$systemFreeMemory\n" +
-                        "Version:$version"
+                var template = "Pid:$pid\tVersion:$version\n" +
+                        "Package:$packageName\nClass:$className\n" +
+                        "Memory:$currentMemory/$systemFreeMemory\tDataSize:${formatSize(dataSize)}"
+                if (!TextUtils.isEmpty(ip)){
+                    template = "$template\nIP:$ip"
+                }
                 if (!TextUtils.isEmpty(focusView)){
                     template = "$template\n$focusView"
                 }
+                textView.text = template
             }
         }
     }

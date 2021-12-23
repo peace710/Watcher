@@ -10,7 +10,13 @@ import androidx.core.content.ContextCompat.startActivity
 import android.content.pm.ResolveInfo
 
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.content.ContextCompat
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.util.*
 
 
 object Utils {
@@ -65,5 +71,22 @@ object Utils {
         return packageInfo?.versionName?:""
     }
 
-
+    fun ip(): String? {
+        try {
+            val en: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val element: NetworkInterface = en.nextElement()
+                val ip: Enumeration<InetAddress> = element.inetAddresses
+                while (ip.hasMoreElements()) {
+                    val inetAddress: InetAddress = ip.nextElement()
+                    if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
+                        return inetAddress.getHostAddress().toString()
+                    }
+                }
+            }
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+        return ""
+    }
 }

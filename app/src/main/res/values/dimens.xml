@@ -2,5 +2,5 @@
 <resources>
     <dimen name="offset">50dp</dimen>
     <dimen name="width">480dp</dimen>
-    <dimen name="height">260dp</dimen>
+    <dimen name="height">180dp</dimen>
 </resources>
