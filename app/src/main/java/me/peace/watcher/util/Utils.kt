@@ -21,7 +21,8 @@ object Utils {
         val pid = pid(context,packageName)
         val currentMemory = appMemory(context,pid)
         val systemFreeMemory = systemFreeMemory(context)
-        return arrayOf<String>(pid.toString(),packageName,className,currentMemory,systemFreeMemory)
+        val version = appVersion(context,packageName)
+        return arrayOf<String>(pid.toString(),packageName,className,currentMemory,systemFreeMemory,version)
     }
 
     private fun top(context: Context?): ComponentName? {
@@ -56,7 +57,13 @@ object Utils {
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
         return Formatter.formatFileSize(context,memoryInfo.availMem)
+    }
+
+    private fun appVersion(context: Context?,packageName:String):String{
+        val packageManager = context?.packageManager
+        val packageInfo = packageManager?.getPackageInfo(packageName, 0)
+        return packageInfo?.versionName?:""
+    }
 
 
-}
 }

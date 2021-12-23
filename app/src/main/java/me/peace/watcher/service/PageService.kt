@@ -13,12 +13,9 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.text.format.Formatter
 import android.util.Log
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.WindowManager
+import android.view.*
 import androidx.appcompat.widget.AppCompatTextView
 import me.peace.watcher.R
-import android.view.View
 import android.view.accessibility.AccessibilityEvent
 import androidx.appcompat.widget.LinearLayoutCompat
 import me.peace.watcher.util.Utils
@@ -26,6 +23,7 @@ import java.util.*
 import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.AccessibilityNodeInfo.FOCUS_ACCESSIBILITY
 import android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT
+import me.peace.watcher.config.Config
 import kotlin.math.log
 
 
@@ -95,13 +93,13 @@ class PageService: AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        val child = rootInActiveWindow.findFocus(FOCUS_INPUT)
+        val child = rootInActiveWindow?.findFocus(FOCUS_INPUT)
         focusView = if (child == null) {
             ""
         }else {
             var rect = Rect()
-            child?.getBoundsInScreen(rect)
-            "FocusView:${child?.viewIdResourceName} - $rect"
+            child.getBoundsInScreen(rect)
+            "FocusView:${child.viewIdResourceName} - $rect"
         }
         update()
     }
@@ -125,6 +123,7 @@ class PageService: AccessibilityService() {
         val className = page?.get(2)?:""
         val currentMemory = page?.get(3)?:""
         val systemFreeMemory = page?.get(4)?:""
+        val version = page?.get(5)?:""
         size(packageName){
             val cacheSize = it?.cacheSize?:0
             val dataSize = it?.dataSize?:0
@@ -137,11 +136,11 @@ class PageService: AccessibilityService() {
                         "DataSize:${formatSize(dataSize)}\n" +
                         "CodeSize:${formatSize(codeSize)}\n" +
                         "CurrentMemory:$currentMemory\n" +
-                        "SystemFreeMemory:$systemFreeMemory"
+                        "SystemFreeMemory:$systemFreeMemory\n" +
+                        "Version:$version"
                 if (!TextUtils.isEmpty(focusView)){
                     template = "$template\n$focusView"
                 }
-                textView.text = template
             }
         }
     }
@@ -153,10 +152,12 @@ class PageService: AccessibilityService() {
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         layoutParams.format = PixelFormat.RGBA_8888
         layoutParams.gravity = Gravity.LEFT or Gravity.TOP
-        layoutParams.x = 50
-        layoutParams.y = 50
-        layoutParams.width = resources.getDimensionPixelOffset(R.dimen.width)
-        layoutParams.height = resources.getDimensionPixelOffset(R.dimen.height)
+        with(resources) {
+            layoutParams.x = getDimensionPixelOffset(R.dimen.offset)
+            layoutParams.y = getDimensionPixelOffset(R.dimen.offset)
+            layoutParams.width = getDimensionPixelOffset(R.dimen.width)
+            layoutParams.height = getDimensionPixelOffset(R.dimen.height)
+        }
 
         val layoutInflater = LayoutInflater.from(applicationContext)
         layout = layoutInflater.inflate(R.layout.layout_page_ui, null) as LinearLayoutCompat

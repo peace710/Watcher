@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="width">420dp</dimen>
-    <dimen name="height">240dp</dimen>
+    <dimen name="offset">50dp</dimen>
+    <dimen name="width">480dp</dimen>
+    <dimen name="height">260dp</dimen>
 </resources>
