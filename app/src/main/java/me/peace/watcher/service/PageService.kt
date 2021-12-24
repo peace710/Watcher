@@ -18,6 +18,8 @@ import androidx.appcompat.widget.LinearLayoutCompat
 import me.peace.watcher.util.Utils
 import java.util.*
 import android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 
 class PageService: AccessibilityService() {
@@ -29,6 +31,9 @@ class PageService: AccessibilityService() {
     private lateinit var timer:Timer
     private lateinit var task:TimerTask
     private var focusView:String = ""
+    private var cpuTime = 0L
+    private var appCpuTime = 0L
+    private var appPackageName = ""
 
 
     companion object{
@@ -56,6 +61,28 @@ class PageService: AccessibilityService() {
         }
     }
 
+    private fun comparePackage(currentPackage:String){
+        if (currentPackage != appPackageName){
+            updateCpu()
+            appPackageName = currentPackage
+        }
+    }
+
+    private fun updateCpu(cpu:Long = 0,app:Long = 0){
+        cpuTime = cpu
+        appCpuTime =  app
+    }
+
+    private fun cpu(pid:String):Float{
+        val nowCpuTime = Utils.cpuTime()
+        val nowAppCpuTime = Utils.appCpuTime(pid)
+        var usage = -1f
+        if (cpuTime != 0L && appCpuTime != 0L && cpuTime != nowCpuTime){
+            usage =  100f * (nowAppCpuTime - appCpuTime) / (nowCpuTime - cpuTime)
+        }
+        updateCpu(nowCpuTime,nowAppCpuTime)
+        return usage
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -92,7 +119,7 @@ class PageService: AccessibilityService() {
         }else {
             var rect = Rect()
             child.getBoundsInScreen(rect)
-            "FocusView:${child.viewIdResourceName} - $rect"
+            "${child.viewIdResourceName} - $rect"
         }
         update()
     }
@@ -118,6 +145,8 @@ class PageService: AccessibilityService() {
         val systemFreeMemory = page?.get(4)?:""
         val version = page?.get(5)?:""
         val ip = Utils.ip()
+        comparePackage(packageName)
+        val cpu = cpu(pid)
         size(packageName){
             val cacheSize = it?.cacheSize?:0
             val dataSize = it?.dataSize?:0
@@ -125,6 +154,10 @@ class PageService: AccessibilityService() {
 
             textView.post {
                 var template = getString(R.string.watcher_info)
+                var cpuContent = ""
+                if (cpu != -1f){
+                    cpuContent = String.format(getString(R.string.watcher_cpu),format(cpu))
+                }
                 var ipContent = ""
                 if (!TextUtils.isEmpty(ip)){
                     ipContent = String.format(getString(R.string.watcher_ip),ip)
@@ -133,7 +166,7 @@ class PageService: AccessibilityService() {
                 if (!TextUtils.isEmpty(focusView)){
                     focusViewContent = String.format(getString(R.string.watcher_focus_view),focusView)
                 }
-                val html = String.format(template,pid,version,packageName,className,"$currentMemory/$systemFreeMemory",formatSize(dataSize),ipContent,focusViewContent)
+                val html = String.format(template,pid,version,packageName,className,"$currentMemory/$systemFreeMemory",cpuContent,ipContent,focusViewContent)
                 textView.text = Html.fromHtml(html)
             }
         }
@@ -186,5 +219,11 @@ class PageService: AccessibilityService() {
 
     private fun formatSize(size:Long):String{
         return Formatter.formatFileSize(this,size)
+    }
+
+    private fun format(num:Float):String{
+        val format = DecimalFormat("0.##")
+        format.roundingMode = RoundingMode.FLOOR
+        return format.format(num)
     }
 }

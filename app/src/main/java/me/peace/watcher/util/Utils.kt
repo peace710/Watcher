@@ -3,15 +3,12 @@ package me.peace.watcher.util
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.text.format.Formatter
-import androidx.core.content.ContextCompat.startActivity
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStreamReader
 
-import android.content.pm.ResolveInfo
-
-import android.content.pm.PackageManager
-import android.util.Log
-import androidx.core.content.ContextCompat
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -88,5 +85,40 @@ object Utils {
             ex.printStackTrace()
         }
         return ""
+    }
+
+     fun cpuTime(): Long {
+        var cpu: Array<String>? = null
+        try {
+            val reader =
+                BufferedReader(InputStreamReader(FileInputStream("/proc/stat")), 1000)
+            val load: String = reader.readLine()
+            reader.close()
+            cpu = load.split(" ").toTypedArray()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+        return cpu!![2].toLong() + cpu[3].toLong() + cpu[4]
+            .toLong() + cpu[6].toLong() + cpu[5].toLong() + cpu[7]
+            .toLong() + cpu[8].toLong() + cpu[9].toLong() + cpu[10]
+            .toLong()
+    }
+
+    fun appCpuTime(pid:String): Long {
+        var cpu: Array<String>? = null
+        try {
+            val reader = BufferedReader(
+                InputStreamReader(
+                    FileInputStream("/proc/$pid/stat")
+                ), 1000
+            )
+            val load: String = reader.readLine()
+            reader.close()
+            cpu = load.split(" ").toTypedArray()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+        return cpu!![13].toLong() + cpu[14].toLong() + cpu[15]
+            .toLong() + cpu[16].toLong()
     }
 }
