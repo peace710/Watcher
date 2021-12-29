@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -29,7 +31,23 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == 'release') {
+                outputFileName = "AppWatcher${defaultConfig.versionName}_release_${date()}.apk"
+            } else if (variant.buildType.name == 'debug') {
+                outputFileName = "AppWatcher${defaultConfig.versionName}_debug_${date()}_debug.apk"
+            }
+        }
+    }
+
 }
+
+def date(){
+    SimpleDateFormat format = new SimpleDateFormat("yy_MM_dd_H_mm_ss")
+    return format.format(new Date(System.currentTimeMillis()))
+}
+
 
 dependencies {
 
