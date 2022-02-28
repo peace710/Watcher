@@ -10,17 +10,19 @@ import android.graphics.Rect
 import android.text.Html
 import android.text.TextUtils
 import android.text.format.Formatter
-import android.view.*
-import androidx.appcompat.widget.AppCompatTextView
-import me.peace.watcher.R
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
-import androidx.appcompat.widget.LinearLayoutCompat
-import me.peace.watcher.util.Utils
-import java.util.*
 import android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.LinearLayoutCompat
+import me.peace.watcher.R
+import me.peace.watcher.util.Utils
 import java.math.RoundingMode
 import java.text.DecimalFormat
-
+import java.util.*
 
 class PageService: AccessibilityService() {
     private var initial:Boolean = false
@@ -35,6 +37,8 @@ class PageService: AccessibilityService() {
     private var appCpuTime = 0L
     private var appPackageName = ""
 
+
+    private val list = listOf<ServiceDelegate>(FocusFrameServiceDelegate())
 
     companion object{
         private const val FREQ = 1000L
@@ -86,10 +90,16 @@ class PageService: AccessibilityService() {
 
     override fun onCreate() {
         super.onCreate()
+        list.forEach { it.onCreate(this) }
         if (!initial){
             init()
             initial = true
         }
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        list.forEach { it.onServiceConnected(this) }
     }
 
     private fun init(){
@@ -113,6 +123,8 @@ class PageService: AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        event?.let { list.filter { it.isEnable() }.forEach { it.onAccessibilityEvent(this, event) } }
+
         val child = rootInActiveWindow?.findFocus(FOCUS_INPUT)
         focusView = if (child == null) {
             ""
@@ -125,7 +137,7 @@ class PageService: AccessibilityService() {
     }
 
     override fun onInterrupt() {
-
+        list.forEach { it.onInterrupt(this) }
     }
 
     private fun stopOrNot(intent: Intent?){
@@ -225,5 +237,11 @@ class PageService: AccessibilityService() {
         val format = DecimalFormat("0.##")
         format.roundingMode = RoundingMode.FLOOR
         return format.format(num)
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        list.forEach { it.onUnbind(this, intent) }
+
+        return super.onUnbind(intent)
     }
 }
