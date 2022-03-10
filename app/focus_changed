@@ -1,0 +1,3 @@
+#!/bin/bash 
+adb root
+adb shell am broadcast -a "me.peace.focus.frame.changed"

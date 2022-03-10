@@ -40,4 +40,9 @@ interface ServiceDelegate {
   fun onUnbind(service: AccessibilityService, intent: Intent?) {
     Log.i("aaa", "onUnbind() called with: service = $service, intent = $intent")
   }
+
+
+  fun onDestroy(service: AccessibilityService) {
+    Log.i("aaa", "onDestroy() called with: service = $service")
+  }
 }

@@ -97,6 +97,11 @@ class PageService: AccessibilityService() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        list.forEach { it.onDestroy(this) }
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         list.forEach { it.onServiceConnected(this) }
@@ -123,7 +128,7 @@ class PageService: AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        event?.let { list.filter { it.isEnable() }.forEach { it.onAccessibilityEvent(this, event) } }
+        event?.let { list.forEach { it.onAccessibilityEvent(this, event) } }
 
         val child = rootInActiveWindow?.findFocus(FOCUS_INPUT)
         focusView = if (child == null) {
@@ -190,7 +195,7 @@ class PageService: AccessibilityService() {
         layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         layoutParams.format = PixelFormat.RGBA_8888
-        layoutParams.gravity = Gravity.LEFT or Gravity.TOP
+        layoutParams.gravity = Gravity.RIGHT or Gravity.TOP
         with(resources) {
             layoutParams.x = getDimensionPixelOffset(R.dimen.offset)
             layoutParams.y = getDimensionPixelOffset(R.dimen.offset)
