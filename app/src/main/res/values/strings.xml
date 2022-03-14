@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Watcher</string>
-    <string name="watcher_info"><![CDATA[<font color="#6200EE">Pid: </font>%1$s\t<font color="#6200EE">Version: </font>%2$s<br /><font color="#6200EE">Package: </font>%3$s<br /><font color="#6200EE">Class: </font>%4$s<br /><font color="#6200EE">Memory: </font>%5$s\t%6$s<br />%7$s%8$s]]></string>
+    <string name="app_name">Monitor</string>
+    <string name="monitor_info"><![CDATA[<font color="#6200EE">Pid: </font>%1$s\t<font color="#6200EE">Version: </font>%2$s<br /><font color="#6200EE">Package: </font>%3$s<br /><font color="#6200EE">Class: </font>%4$s<br /><font color="#6200EE">Memory: </font>%5$s\t%6$s<br />%7$s%8$s]]></string>
     <string name="watcher_cpu"><![CDATA[<font color="#6200EE">Cpu: </font>%1$s%%]]></string>
     <string name="watcher_ip"><![CDATA[<font color="#6200EE">IP: </font>%1$s<br />]]></string>
-    <string name="watcher_focus_view"><![CDATA[<font color="#6200EE">FocusView: </font>%1$s<br />]]></string>
+    <string name="monitor_focus_view"><![CDATA[<font color="#6200EE">FocusView: </font>%1$s<br />]]></string>
 </resources>

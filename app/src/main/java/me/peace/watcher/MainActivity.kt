@@ -1,16 +1,13 @@
 package me.peace.watcher
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import me.peace.watcher.service.PageService
 import me.peace.watcher.util.AccessibilityServiceUtils
-import me.peace.watcher.util.Utils
 
 class MainActivity : AppCompatActivity() {
     companion object{
-        private const val SERVICE = "me.peace.watcher/me.peace.watcher..service.PageService"
+        private const val SERVICE = "me.peace.watcher/me.peace.watcher.service.MonitorService"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

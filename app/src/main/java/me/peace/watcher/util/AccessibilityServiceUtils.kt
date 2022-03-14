@@ -1,13 +1,17 @@
 package me.peace.watcher.util
 
+import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.provider.Settings.SettingNotFoundException
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.provider.Settings
 import android.text.TextUtils.SimpleStringSplitter
 import android.util.Log
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 
 
 object AccessibilityServiceUtils {
@@ -61,6 +65,17 @@ object AccessibilityServiceUtils {
 
         if (isIntentSafe) {
             context?.startActivity(intent)
+        }
+    }
+
+    fun focusViewInfo(service: AccessibilityService, event: AccessibilityEvent):String{
+        val child = service.rootInActiveWindow?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+        return if (child == null) {
+            ""
+        }else {
+            var rect = Rect()
+            child.getBoundsInScreen(rect)
+            "${child.viewIdResourceName} - $rect"
         }
     }
 }
