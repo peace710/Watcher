@@ -35,7 +35,7 @@ class FloatWindowImpl : Window {
 
     override fun createLayoutParams(x: Int, y: Int, w: Int, h: Int):WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams()
-        params.type = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY else WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+        params.type = getWindowType()
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         params.format = PixelFormat.RGBA_8888
         params.gravity = Gravity.RIGHT or Gravity.TOP
@@ -48,7 +48,7 @@ class FloatWindowImpl : Window {
 
     override fun updateLocation(view: View,x: Int, y: Int, w: Int, h: Int){
         val params = WindowManager.LayoutParams()
-        params.type = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY else WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+        params.type = getWindowType()
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         params.format = PixelFormat.RGBA_8888
         params.gravity = Gravity.LEFT or Gravity.TOP
@@ -59,4 +59,6 @@ class FloatWindowImpl : Window {
         Log.d(TAG, "updateLocation() called with: view = $view, x = $x, y = $y, w = $w, h = $h")
         manager?.updateViewLayout(view, params)
     }
+
+    private fun getWindowType() =  WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 }
