@@ -10,6 +10,7 @@ import android.graphics.Rect
 import android.text.Html
 import android.text.TextUtils
 import android.text.format.Formatter
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +21,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import me.peace.watcher.R
 import me.peace.watcher.util.Utils
+import java.io.*
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.*
@@ -36,11 +38,13 @@ class PageService: AccessibilityService() {
     private var cpuTime = 0L
     private var appCpuTime = 0L
     private var appPackageName = ""
+    private var prevBytes = bytes()
 
 
     private val list = listOf<ServiceDelegate>(FocusFrameServiceDelegate())
 
     companion object{
+        private const val TAG = "PageService"
         private const val FREQ = 1000L
         private const val PATH = "PATH"
         private const val ACTION = "me.peace.page"
@@ -162,6 +166,7 @@ class PageService: AccessibilityService() {
         val systemFreeMemory = page?.get(4)?:""
         val version = page?.get(5)?:""
         val ip = Utils.ip()
+        val internetSpeed = internetSpeed()
         comparePackage(packageName)
         val cpu = cpu(pid)
         size(packageName){
@@ -179,14 +184,84 @@ class PageService: AccessibilityService() {
                 if (!TextUtils.isEmpty(ip)){
                     ipContent = String.format(getString(R.string.watcher_ip),ip)
                 }
+                var speedContent = ""
+                if (!TextUtils.isEmpty(internetSpeed)){
+                    speedContent = String.format(getString(R.string.watcher_internet_speed), internetSpeed)
+                }
                 var focusViewContent = ""
                 if (!TextUtils.isEmpty(focusView)){
                     focusViewContent = String.format(getString(R.string.watcher_focus_view),focusView)
                 }
-                val html = String.format(template,pid,version,packageName,className,"$currentMemory/$systemFreeMemory",cpuContent,ipContent,focusViewContent)
+                val html = String.format(
+                    template,
+                    pid,
+                    version,
+                    packageName,
+                    className,
+                    "$currentMemory/$systemFreeMemory",
+                    cpuContent,
+                    ipContent,
+                    speedContent,
+                    focusViewContent
+                )
                 textView.text = Html.fromHtml(html)
             }
         }
+    }
+
+    private fun internetSpeed(): String {
+        var bitrate = ""
+        var readBits: Long = 0
+        var currentBytes: Long = 0
+        currentBytes = bytes()
+        Log.i(TAG, currentBytes.toString())
+        readBits = (currentBytes - prevBytes) * 8
+        Formatter.formatFileSize(applicationContext, readBits)
+
+        bitrate = Formatter.formatFileSize(applicationContext, readBits).run {
+            val builder = StringBuilder(this)
+            builder.delete(builder.length - 1, builder.length)
+            builder.append("bps").toString()
+        }
+
+        Log.i(TAG, bitrate)
+        prevBytes = currentBytes
+        return bitrate
+    }
+
+    private fun bytes(): Long {
+        val res =
+            readTxtFile("/sys/class/net/eth0/statistics/rx_bytes").trim { it <= ' ' }
+                .toLongOrNull() ?: 0
+        return res
+    }
+
+
+    private fun readTxtFile(strFilePath: String): String {
+        var content = "" //文件内容字符串
+        val file = File(strFilePath) //打开文件
+        if (file.isDirectory()) //如果path是传递过来的参数，可以做一个非目录的判断
+        {
+            Log.d(TAG, "The File doesn't not exist.")
+        } else {
+            try {
+                val instream: InputStream = FileInputStream(file)
+                val inputreader = InputStreamReader(instream)
+                val buffreader = BufferedReader(inputreader)
+                var line: String
+                //分行读取
+                while (buffreader.readLine().also { line = it } != null) {
+                    content += """
+                    $line
+                    
+                    """.trimIndent()
+                }
+                instream.close()
+            } catch (e: Exception) {
+                Log.d(TAG, e.message.toString())
+            }
+        }
+        return content
     }
 
     private fun attachUi(){
